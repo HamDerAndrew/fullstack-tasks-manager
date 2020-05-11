@@ -6,14 +6,10 @@ const Task = mongoose.model('Task', {
         type: String,
         required: true,
         trim: true,
-        default: "This is a string default"
     },
     completed: {
         type: Boolean,
         default: false
-    },
-    secondarystuff: {
-        type: String,
     }
 })
 
