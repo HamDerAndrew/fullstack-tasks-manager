@@ -66,6 +66,19 @@ app.patch('/users/:id', async (req, res) => {
     }
 })
 
+// Delete single user
+app.delete('/users/:id', async (req, res) => {
+    try {
+        const user = await User.findByIdAndDelete(req.params.id)
+        if (!user) return res.status(404).send()
+
+        res.send(user)
+    } catch(error) {
+        res.status(500).send()
+    }
+})
+
+
 // Create task
 app.post('/tasks', async (req, res) => {
     try {
@@ -76,7 +89,6 @@ app.post('/tasks', async (req, res) => {
         res.status(400).send(error)
     }
 })
-
 
 // Read tasks
 app.get('/tasks', async (req, res) => {
@@ -104,7 +116,9 @@ app.get('/tasks/:id', async (req, res) => {
 
 // Update single task
 app.patch('/tasks/:id', async (req, res) => {
+    // Convert req.body object to an array of properties
     const taskUpdates = Object.keys(req.body)
+    // Define what properties are allowed to be updated
     const allowedTaskUpdates = ['description', 'completed']
     const isTaskOperationValid = taskUpdates.every((update) => {
         return allowedTaskUpdates.includes(update)
@@ -122,6 +136,17 @@ app.patch('/tasks/:id', async (req, res) => {
     }
 })
 
+// Delete single task
+app.delete('/tasks/:id', async (req, res) => {
+    try {
+        const task = await Task.findByIdAndDelete(req.params.id)
+        if (!task) return res.status(404).send()
+
+        res.send(task)
+    } catch(error) {
+        res.status(500).send(error)
+    }
+})
 
 app.listen(port, () => {
     console.log("Server up and running on:", port)
