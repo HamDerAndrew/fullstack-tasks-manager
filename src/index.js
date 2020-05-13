@@ -102,6 +102,26 @@ app.get('/tasks/:id', async (req, res) => {
     }
 })
 
+// Update single task
+app.patch('/tasks/:id', async (req, res) => {
+    const taskUpdates = Object.keys(req.body)
+    const allowedTaskUpdates = ['description', 'completed']
+    const isTaskOperationValid = taskUpdates.every((update) => {
+        return allowedTaskUpdates.includes(update)
+    })
+
+    if (!isTaskOperationValid) return res.status(400).send({ error: 'Invalid update' })
+
+    try {
+        const task = await Task.findByIdAndUpdate(req.params.id, req.body, {new: true, runValidators: true})
+        if(!task) return res.status(404).send()
+        
+        res.send(task)
+    } catch(error) {
+        res.status(400).send(error)
+    }
+})
+
 
 app.listen(port, () => {
     console.log("Server up and running on:", port)
