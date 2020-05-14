@@ -1,6 +1,7 @@
 const mongoose = require('mongoose');
 const validator = require('validator');
 const bcrypt = require('bcrypt');
+const jwt = require('jsonwebtoken')
 
 const userSchema = new mongoose.Schema({
     name: {
@@ -39,10 +40,29 @@ const userSchema = new mongoose.Schema({
                 throw new Error('Age must be a positive number')
             }
         }
-    }
+    },
+    tokens: [{
+        token: {
+            type: String,
+            required: true
+        }
+    }]
 })
 
+// Create a method for handling JSON Webtokens
+// userSchema.methods are available on the instances - also called Instance Methods
+userSchema.methods.generateAuthToken = async function () {
+    const user = this
+    const token = jwt.sign({ _id: user._id.toString() }, 'thisisasecretnode')
+
+    user.tokens = user.tokens.concat({ token: token })
+    await user.save()
+
+    return token
+}
+
 // Create a method in the User model with 'userSchema.statics.nameOfMethod'
+// userSchema.statics methods are accessible on the Model - also called Model Methods
 userSchema.statics.findByCredentials = async (email, password) => {
     const user = await User.findOne({email: email})
     if (!user) throw new Error('Unable to log in')
@@ -51,7 +71,7 @@ userSchema.statics.findByCredentials = async (email, password) => {
     if (!isAMatch) throw new Error('Unable to log in')
 
     return user
-} 
+}
 
 // Setup middleware. 
 // Using a normal function because the 'this' binding is crucial here. Arrow functions don't bind 'this'
