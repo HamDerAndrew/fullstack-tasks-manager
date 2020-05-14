@@ -50,7 +50,14 @@ router.patch('/tasks/:id', async (req, res) => {
     if (!isTaskOperationValid) return res.status(400).send({ error: 'Invalid update' })
 
     try {
-        const task = await Task.findByIdAndUpdate(req.params.id, req.body, {new: true, runValidators: true})
+        const task = await Task.findById(req.params.id)
+
+        // Loop through the request body object and update the values to what the user inputs.
+        taskUpdates.forEach((update) => {
+            task[update] = req.body[update]
+        })
+        await task.save()
+        // const task = await Task.findByIdAndUpdate(req.params.id, req.body, {new: true, runValidators: true})
         if(!task) return res.status(404).send()
         
         res.send(task)
