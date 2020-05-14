@@ -11,6 +11,7 @@ const userSchema = new mongoose.Schema({
     email: {
         type: String,
         required: true,
+        unique: true,
         trim: true,
         lowercase: true,
         validate(value) {
@@ -40,6 +41,17 @@ const userSchema = new mongoose.Schema({
         }
     }
 })
+
+// Create a method in the User model with 'userSchema.statics.nameOfMethod'
+userSchema.statics.findByCredentials = async (email, password) => {
+    const user = await User.findOne({email: email})
+    if (!user) throw new Error('Unable to log in')
+
+    const isAMatch = await bcrypt.compare(password, user.password)
+    if (!isAMatch) throw new Error('Unable to log in')
+
+    return user
+} 
 
 // Setup middleware. 
 // Using a normal function because the 'this' binding is crucial here. Arrow functions don't bind 'this'
