@@ -54,28 +54,13 @@ router.post('/users/logoutall', authentication, async (req, res) => {
     }
 })
 
-// Read users - middleware must always be the 2nd argument and the handlerfunction must be the 3rd.
+// Read user - middleware must always be the 2nd argument and the handlerfunction must be the 3rd.
 router.get('/users/user', authentication ,async (req, res) => {
     res.send(req.user)
 })
 
-// Read single user
-router.get('/users/:id', async (req, res) => {
-    //use Express' 'req.params' to access the dynamic '/:id' value
-    const _id = req.params.id
-
-    try {
-        const user = await User.findById(_id)
-        if (!user) return res.status(404).send()
-
-        res.send(user)
-    } catch(error) {
-        res.status(500).send(error)
-    }
-})
-
 // Update user
-router.patch('/users/:id', async (req, res) => {
+router.patch('/users/user', authentication, async (req, res) => {
     const updates = Object.keys(req.body)
     const allowedUpdates = ['name', 'email', 'password', 'age']
     const isValidOperation = updates.every((update) => {
@@ -85,30 +70,30 @@ router.patch('/users/:id', async (req, res) => {
     if (!isValidOperation) return res.status(400).send({ error: 'Invalid update' })
     
     try {
-        const user = await User.findById(req.params.id)
-
         // Loop through the request body object and update the values to what the user inputs.
         updates.forEach((update) => {
-            user[update] = req.body[update]
+            // Remember, we have access to 'user' in 'req' because of the 'authentication'
+            req.user[update] = req.body[update]
         })
-        await user.save()
-       
-        if (!user) return res.status(404).send()
+        await req.user.save()
 
-        res.send(user)
+        res.send(req.user)
     } catch(error) {
-        console.log("ERROR")
         res.status(400).send(error)
     }
 })
 
-// Delete single user
-router.delete('/users/:id', async (req, res) => {
+// Delete user
+router.delete('/users/user', authentication, async (req, res) => {
     try {
-        const user = await User.findByIdAndDelete(req.params.id)
-        if (!user) return res.status(404).send()
+        // We have access to 'req.user' because of the 'authentication' middleware
+        // const user = await User.findByIdAndDelete(req.user._id)
+        // if (!user) return res.status(404).send()
 
-        res.send(user)
+        // Use Mongoose 'remove()' to delete the user
+        await req.user.remove()
+
+        res.send(req.user)
     } catch(error) {
         res.status(500).send()
     }

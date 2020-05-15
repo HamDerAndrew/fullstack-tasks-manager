@@ -27,12 +27,6 @@ app.use(express.json())
 app.use(userRouter)
 app.use(taskRouter)
 
-//
-// Without middleware : new request -> run route handler
-//
-// With middleware new request -> do something -> run route handler
-//
-
 app.listen(port, () => {
     console.log("Server up and running on:", port)
 })
