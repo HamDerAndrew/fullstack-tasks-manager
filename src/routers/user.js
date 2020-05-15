@@ -1,5 +1,6 @@
 const express = require('express');
-const router = new express.Router()
+const router = new express.Router();
+const authentication = require('../middleware/authentication');
 const User = require('../models/user');
 
 // Create user
@@ -25,15 +26,9 @@ router.post('/users/login', async (req, res) => {
     }
 })
 
-// Read users
-router.get('/users', async (req, res) => {
-    try {
-        // Using an empty object with .find() fetches all users
-        const users = await User.find({})
-        res.send(users)
-    } catch(error) {
-        res.status(500).send()
-    }
+// Read users - middleware must always be the 2nd argument and the handlerfunction must be the 3rd.
+router.get('/users/me', authentication ,async (req, res) => {
+    res.send(req.user)
 })
 
 // Read single user
