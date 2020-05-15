@@ -26,8 +26,36 @@ router.post('/users/login', async (req, res) => {
     }
 })
 
+// Logout user from single session
+router.post('/users/logout', authentication, async (req, res) => {
+    try {
+        // Filter out/delete the token when the user logs out.
+        req.user.tokens = req.user.tokens.filter((token) => {
+            // If the token matches, keep it in the array. If not, remove it
+            return token.token !== req.token
+        })
+        await req.user.save()
+
+        res.send()
+    } catch(error) {
+        res.status(500).send()
+    }
+})
+
+// Logout user from all sessions (ex. mobile, smartTV, desktop etc.)
+router.post('/users/logoutall', authentication, async (req, res) => {
+    try {
+        req.user.tokens = []
+        await req.user.save()
+
+        res.send()
+    } catch(error) {
+        res.status(500).send()
+    }
+})
+
 // Read users - middleware must always be the 2nd argument and the handlerfunction must be the 3rd.
-router.get('/users/me', authentication ,async (req, res) => {
+router.get('/users/user', authentication ,async (req, res) => {
     res.send(req.user)
 })
 
