@@ -61,6 +61,21 @@ userSchema.methods.generateAuthToken = async function () {
     return token
 }
 
+// Create method for hiding the full profile info (like password, list of tokens etc.) and only display 'public' info.
+// Here we are utilizing the 'toJSON' method that's available on JavaScript objects. This method is allows you to decide which data
+// comes back with the object after it is stringified. Behind the scenes in Express, all response.send() are stringified.
+// More info about it: https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/JSON/stringify#toJSON_behavior
+userSchema.methods.toJSON =  function () {
+    const user = this
+    // Use mongoose's 'toObject()' method to turn the user data into plain JavaScript object
+    const userObject = user.toObject()
+
+    delete userObject.password
+    delete userObject.tokens
+
+    return userObject
+}
+
 // Create a method in the User model with 'userSchema.statics.nameOfMethod'
 // userSchema.statics methods are accessible on the Model - also called Model Methods
 userSchema.statics.findByCredentials = async (email, password) => {
