@@ -61,6 +61,16 @@ userSchema.methods.generateAuthToken = async function () {
     return token
 }
 
+// Setup a virtual property so Mongoose can link tasks with a User
+userSchema.virtual('userTasks', {
+    // Link Task model
+    ref: 'Task',
+    // Associate 'User._id' with 'Task.author._id'
+    localField: '_id',
+    // The name of the field in the Task model to link with localField in User
+    foreignField: 'author'
+})
+
 // Create method for hiding the full profile info (like password, list of tokens etc.) and only display 'public' info.
 // Here we are utilizing the 'toJSON' method that's available on JavaScript objects. This method is allows you to decide which data
 // comes back with the object after it is stringified. Behind the scenes in Express, all response.send() are stringified.
