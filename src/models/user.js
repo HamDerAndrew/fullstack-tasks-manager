@@ -42,6 +42,10 @@ const userSchema = new mongoose.Schema({
             }
         }
     },
+    avatar: {
+        // Add avatar image to the user in the database as binary data
+        type: Buffer
+    },
     tokens: [{
         token: {
             type: String,

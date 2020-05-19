@@ -1,5 +1,6 @@
 const express = require('express');
 const router = new express.Router();
+const multer = require('multer')
 const authentication = require('../middleware/authentication');
 const User = require('../models/user');
 
@@ -97,6 +98,41 @@ router.delete('/users/user', authentication, async (req, res) => {
     } catch(error) {
         res.status(500).send()
     }
+})
+
+// post avatar image
+const upload = multer({
+    limits: {
+        fileSize: 1000000,
+    },
+    fileFilter(req, file, callback) {
+        // Use regex to validate that the file is 'JPG' , 'JPEG' or 'PNG' only.
+        if(!file.originalname.match(/\.(jpg|png|jpeg)$/)) return callback(new Error('Image must be PNG, JPEG or JPG'))
+
+        // Accept upload with 'true' as the second argument in 'callback'
+        callback(undefined, true)
+    }
+})
+
+// it's important to have 'authentication' before 'upload.single()'. This way we authenticate the user first
+router.post('/users/user/avatar', authentication, upload.single('avatarImg'), async (req, res) => {
+    // req.file is a Multer object coming from the 'upload' middleware
+    req.user.avatar = req.file.buffer
+    await req.user.save()
+
+    res.send()
+}, 
+// Express error handler - the function MUST have this call signature with the 4 paramaters so Express knows it's an error handler.
+(error, req, res, next) => {
+    res.status(400).send({error: error.message})
+})
+
+// Delete avatar img
+router.delete('/users/user/avatar', authentication, async (req, res) => {
+    req.user.avatar = undefined
+    await req.user.save()
+    
+    res.send()
 })
 
 module.exports = router
