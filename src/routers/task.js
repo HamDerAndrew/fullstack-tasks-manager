@@ -19,12 +19,39 @@ router.post('/tasks', authentication, async (req, res) => {
     }
 })
 
-// Read tasks
+// Read tasks - GET /tasks?completed=true
+// Limit/skip tasks - GET /task?limit=value&skip=value
+// Sort tasks - GET /task?sortBy=value_asc or /task?sortBy=value_desc
 router.get('/tasks', authentication, async (req, res) => {
-    const _id = req.user._id
+    const isCompleted = req.query.completed
+    const limit = req.query.limit
+    const skip = req.query.skip
+    const sortRequest= req.query.sortBy
+    const sort = {}
+    const match = {}
+
+    // Check if '?completed' is part of the URL. 
+    if (isCompleted) {
+        match.completed = isCompleted === 'true'
+    }
+
+    if (sortRequest) {
+        const parts = sortRequest.split('_')
+        // Sorting by asc is 1 and desc is -1
+        sort[parts[0]] = parts[1] === 'desc' ? -1 : 1
+    }
+
     try {
-        //const tasks = await Task.find({ author: _id })
-        await req.user.populate('userTasks').execPopulate()
+        await req.user.populate({
+            path: 'userTasks',
+            match: match,
+            options: {
+                // Mongoose will ignore it if the value is not a number
+                limit: parseInt(limit),
+                skip: parseInt(skip),
+                sort: sort
+            }
+        }).execPopulate()
         
         res.send(req.user.userTasks)
     } catch(error) {
@@ -60,7 +87,7 @@ router.patch('/tasks/:id', authentication, async (req, res) => {
 
     try {
         const task = await Task.findOne({ _id: req.params.id, author: req.user._id })
-        // const task = await Task.findByIdAndUpdate(req.params.id, req.body, {new: true, runValidators: true})
+        
         if(!task) return res.status(404).send()
         
         // Loop through the request body object and update the values to what the user inputs.
