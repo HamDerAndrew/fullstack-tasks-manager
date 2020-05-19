@@ -48,7 +48,10 @@ const userSchema = new mongoose.Schema({
             required: true
         }
     }]
-})
+},
+ {
+    timestamps: true 
+ })
 
 // Create a method for handling JSON Webtokens
 // userSchema.methods are available on the instances - also called Instance Methods
