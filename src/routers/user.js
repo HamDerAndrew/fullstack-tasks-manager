@@ -127,6 +127,21 @@ router.post('/users/user/avatar', authentication, upload.single('avatarImg'), as
     res.status(400).send({error: error.message})
 })
 
+// get user avatar image and make it viewable in the browser
+router.get('/users/:id/avatar', async (req, res) => {
+    try{
+        const user = await User.findById(req.params.id)
+
+        if(!user || !user.avatar) throw new Error()
+
+        // Key-value pair with name of the response header and the value we want to set on it
+        res.set('Content-Type', 'image/jpg')
+        res.send(user.avatar)
+    } catch (error) {
+        res.status(404).send()
+    }
+})
+
 // Delete avatar img
 router.delete('/users/user/avatar', authentication, async (req, res) => {
     req.user.avatar = undefined
