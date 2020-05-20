@@ -1,6 +1,7 @@
 const express = require('express');
 const router = new express.Router();
 const multer = require('multer')
+const sharp = require('sharp');
 const authentication = require('../middleware/authentication');
 const User = require('../models/user');
 
@@ -88,9 +89,6 @@ router.patch('/users/user', authentication, async (req, res) => {
 router.delete('/users/user', authentication, async (req, res) => {
     try {
         // We have access to 'req.user' because of the 'authentication' middleware
-        // const user = await User.findByIdAndDelete(req.user._id)
-        // if (!user) return res.status(404).send()
-
         // Use Mongoose 'remove()' to delete the user
         await req.user.remove()
 
@@ -116,8 +114,9 @@ const upload = multer({
 
 // it's important to have 'authentication' before 'upload.single()'. This way we authenticate the user first
 router.post('/users/user/avatar', authentication, upload.single('avatarImg'), async (req, res) => {
-    // req.file is a Multer object coming from the 'upload' middleware
-    req.user.avatar = req.file.buffer
+    // Let Sharp modify the original file data. 'req.file' is a Multer object coming from the 'upload' middleware
+    const buffer = await sharp(req.file.buffer).resize({ width: 200, height: 200 }).png().toBuffer()
+    req.user.avatar = buffer
     await req.user.save()
 
     res.send()
@@ -134,8 +133,7 @@ router.get('/users/:id/avatar', async (req, res) => {
 
         if(!user || !user.avatar) throw new Error()
 
-        // Key-value pair with name of the response header and the value we want to set on it
-        res.set('Content-Type', 'image/jpg')
+        res.set('Content-Type', 'image/png')
         res.send(user.avatar)
     } catch (error) {
         res.status(404).send()

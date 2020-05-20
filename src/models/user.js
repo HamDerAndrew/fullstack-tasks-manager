@@ -90,6 +90,8 @@ userSchema.methods.toJSON =  function () {
 
     delete userObject.password
     delete userObject.tokens
+    // Remove avatar img data from the user request. It's already served via a URL in './router/user.js'
+    delete userObject.avatar
 
     return userObject
 }
