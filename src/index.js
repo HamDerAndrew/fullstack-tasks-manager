@@ -4,7 +4,7 @@ const userRouter = require('./routers/user');
 const taskRouter = require('./routers/task');
 
 const app = express();
-const port = process.env.port
+const port = process.env.PORT
 
 // Set Express to automatically parse JSON so we can access it in request handlers
 app.use(express.json())
