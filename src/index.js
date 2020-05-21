@@ -3,6 +3,10 @@ require('./db/mongoose');
 const userRouter = require('./routers/user');
 const taskRouter = require('./routers/task');
 
+process.env.DATABASE_URL = "a db url"
+console.log(process.env.DATABASE_URL)
+console.log(process.env.myTest = "whats up")
+
 const app = express();
 const port = process.env.port || 3000
 

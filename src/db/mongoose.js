@@ -1,7 +1,7 @@
 const mongoose = require('mongoose');
 
 // create connection string AND database name after portnumber
-const connectionUrl = 'mongodb://127.0.0.1:27017/task-manager-api'
+const connectionUrl = process.env.MONGO_DATABASE_URL
 
 mongoose.connect(connectionUrl, {
     useNewUrlParser: true,

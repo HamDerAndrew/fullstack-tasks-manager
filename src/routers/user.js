@@ -4,12 +4,14 @@ const multer = require('multer')
 const sharp = require('sharp');
 const authentication = require('../middleware/authentication');
 const User = require('../models/user');
+const { sendWelcomeEmail, sendCancelationEmail } = require('../emails/account');
 
 // Create user
 router.post('/users', async (req, res) => {
     const user = new User(req.body);
     try {
         await user.save()
+        sendWelcomeEmail(user.email, user.name)
         const token = await user.generateAuthToken()
         res.status(201).send({user: user, token: token})
     } catch(error) {
@@ -91,6 +93,7 @@ router.delete('/users/user', authentication, async (req, res) => {
         // We have access to 'req.user' because of the 'authentication' middleware
         // Use Mongoose 'remove()' to delete the user
         await req.user.remove()
+        sendCancelationEmail(req.user.email, req.user.name)
 
         res.send(req.user)
     } catch(error) {

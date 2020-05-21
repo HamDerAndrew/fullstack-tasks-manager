@@ -6,7 +6,7 @@ const authentication = async (req, res, next) => {
         // Use replace to get the 'clean' token by removing 'Bearer'
         const token = req.header('Authorization').replace('Bearer ', '')
         // Verify the token with the secret
-        const decoded = jwt.verify(token, 'thisisasecretnode')
+        const decoded = jwt.verify(token, process.env.JSON_SECRET_STRING)
         // Find the user. Look for a user with a valid token in their 'tokens' array
         const user = await User.findOne({ _id: decoded._id, 'tokens.token': token })
 
