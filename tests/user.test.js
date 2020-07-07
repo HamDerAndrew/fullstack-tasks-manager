@@ -27,3 +27,10 @@ test('Should sign up new user', async () => {
     })
     .expect(201)
 })
+
+test('Should login an existing user', async () => {
+    await request(app).post('/users/login').send({
+        email: userOne.email,
+        password: userOne.password
+    }).expect(200)
+})
