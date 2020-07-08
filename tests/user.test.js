@@ -10,6 +10,7 @@ const userOne = {
     name: 'Batman',
     email: 'batman@batcave.com',
     password: 'imbatman',
+    // avatar: './fixtures/profile-pic.jpg',
     tokens: [{
         token: jwt.sign({_id: userOneId}, process.env.JSON_SECRET_STRING )
     }]
@@ -26,13 +27,15 @@ beforeEach(async () => {
 
 
 test('Should sign up new user', async () => {
-    // saving the 'response' in a variable gives access the the response body aswell
-    const response = await request(app).post('/users').send({
-        name: 'André',
-        email: 'andrewtest@example.com',
-        password: 'test123'
-    })
-    .expect(201)
+    // saving the 'response' in a variable gives access to the response body aswell
+    const response = await request(app)
+        .post('/users')
+        .send({
+            name: 'André',
+            email: 'andrewtest@example.com',
+            password: 'test123'
+         })
+        .expect(201)
 
     // Check/Assert that user is created correctly in the database
     const user = await User.findById(response.body.user._id)
@@ -52,10 +55,12 @@ test('Should sign up new user', async () => {
 })
 
 test('Should login an existing user', async () => {
-    const response = await request(app).post('/users/login').send({
-        email: userOne.email,
-        password: userOne.password
-    }).expect(200)
+    const response = await request(app)
+        .post('/users/login')
+        .send({
+            email: userOne.email,
+            password: userOne.password
+        }).expect(200)
 
     // Check/Assert that the response matches the users second token, which is created upon logins
     const user = await User.findById(userOneId)
@@ -86,10 +91,10 @@ test('Should not get a user profile for unauthenticated user', async () => {
 
 test('Should delete authenticated user\'s account', async () => {
     const response = await request(app)
-    .delete('/users/user')
-    .set('Authorization', `Bearer ${userOne.tokens[0].token}`)
-    .send()
-    .expect(200)
+        .delete('/users/user')
+        .set('Authorization', `Bearer ${userOne.tokens[0].token}`)
+        .send()
+        .expect(200)
 
     const user = await User.findById(userOneId)
     expect(user).toBeNull()
@@ -97,7 +102,44 @@ test('Should delete authenticated user\'s account', async () => {
 
 test('Should not delete unauthenticated user\'s account', async () => {
     await request(app)
-    .delete('/users/user')
-    .send()
-    .expect(401)
+        .delete('/users/user')
+        .send()
+        .expect(401)
+})
+
+test('Should upload avatar img', async () => {
+    await request(app)
+        .post('/users/user/avatar')
+        .set('Authorization', `Bearer ${userOne.tokens[0].token}`)
+        // 'attach()' takes two string arguments: the form field we are trying to set, and the location of the file to use
+        .attach('avatarImg', 'tests/fixtures/avatar-default.jpg')
+        .expect(200)
+
+    const user = await User.findById(userOneId)
+    // Using 'toEqual' because we are comparing two empty objects. They are not the same because they are each created as different objects in memory
+    // expect({}).toEqual({})
+    expect(user.avatar).toEqual(expect.any(Buffer))
+})
+
+test('Should update valid fields on user', async () => {
+    await request(app)
+        .patch('/users/user')
+        .set('Authorization', `Bearer ${userOne.tokens[0].token}`)
+        .send({
+            name: 'Ekko'
+        })
+        .expect(200)
+
+    const user = await User.findById(userOneId)
+    expect(user.name).toBe('Ekko')
+})
+
+test('Should not update invalid fields on user', async () => {
+    await request(app)
+        .patch('/users/user')
+        .set('Authorization', `Bearer ${userOne.tokens[0].token}`)
+        .send({
+            location: 'Republic Fleet'
+        })
+        .expect(400)
 })
