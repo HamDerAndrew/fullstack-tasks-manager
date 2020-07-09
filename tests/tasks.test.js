@@ -9,5 +9,15 @@ const { send } = require('@sendgrid/mail');
 beforeEach(setupDb)
 
 test('Should create a task for the user', async () => {
+    const response = await request(app)
+        .post('/tasks')
+        .set('Authorization', `Bearer ${userOne.tokens[0].token}`)
+        .send({
+            description: 'Test received from testcode'
+        })
+        .expect(201)
 
+        const task = await Task.findById(response.body._id)
+        expect(task).not.toBeNull()
+        expect(task.completed).toBe(false)
 })
