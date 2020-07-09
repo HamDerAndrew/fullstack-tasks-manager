@@ -1,30 +1,11 @@
 const request = require('supertest');
-const jwt = require('jsonwebtoken');
-const mongoose = require('mongoose')
 const app = require('../src/app');
 const User = require('../src/models/user');
-
-const userOneId = new mongoose.Types.ObjectId()
-const userOne = {
-    _id: userOneId,
-    name: 'Batman',
-    email: 'batman@batcave.com',
-    password: 'imbatman',
-    // avatar: './fixtures/profile-pic.jpg',
-    tokens: [{
-        token: jwt.sign({_id: userOneId}, process.env.JSON_SECRET_STRING )
-    }]
-}
+const { userOne, userOneId, setupDb } = require('./fixtures/testdb');
 
 // Jest globals
 // Runs once for each testcase in this testsuite
-beforeEach(async () => {
-    // Empty database before test so we don't have to create different users each time we test
-    await User.deleteMany()
-    // Create new user to test on
-    await new User(userOne).save()
-})
-
+beforeEach(setupDb)
 
 test('Should sign up new user', async () => {
     // saving the 'response' in a variable gives access to the response body aswell
