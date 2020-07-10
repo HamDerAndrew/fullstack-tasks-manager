@@ -1,7 +1,7 @@
 const request = require('supertest');
 const app = require('../src/app');
 const Task = require('../src/models/task');
-const { userOne, userOneId, setupDb } = require('./fixtures/testdb');
+const { userOne, userTwo, taskOne, setupDb } = require('./fixtures/testdb');
 const { send } = require('@sendgrid/mail');
 
 // Jest globals
@@ -20,4 +20,28 @@ test('Should create a task for the user', async () => {
         const task = await Task.findById(response.body._id)
         expect(task).not.toBeNull()
         expect(task.completed).toBe(false)
+})
+
+test('Should fetch all tasks for the user', async () => {
+    const response = await request(app)
+        .get('/tasks')
+        .set('Authorization', `Bearer ${userOne.tokens[0].token}`)
+        .send()
+        .expect(200)
+
+        // Check that there are two tasks for userOne
+        const tasks = await response.body
+        expect(tasks.length).toBe(2)
+})
+
+test('Should not delete task since the user is not the author of the task', async () => {
+    const response = await request(app)
+    .delete(`/tasks/${taskOne._id}`)
+    .set('Authorization', `Bearer ${userTwo.tokens[0].token}`)
+    .send()
+    .expect(404)
+
+    // Check that the task is still there
+    const task = await Task.findById(taskOne._id)
+    expect(task).not.toBeNull()
 })
